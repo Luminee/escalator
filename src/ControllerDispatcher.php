@@ -22,6 +22,7 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
             $version    = $request->header(config('escalator.header'));
             $controller = $this->getAvailableController($version, $controller, $method);
         }
+        
         return parent::dispatch($route, $request, $controller, $method);
     }
     
@@ -53,7 +54,15 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
     
     protected function listVersionsArray($controller)
     {
-        $module = explode('\\', $controller)[config('escalator.module.index')];
-        return config('escalator.versions.'.strtolower($module), []);
+        $module   = explode('\\', $controller)[config('escalator.module.index')];
+        $versions = config('escalator.versions.'.strtolower($module), []);
+        
+        if (empty($versions)) {
+            $exception = 'There is no version array in module: '.$module.'. '.
+                'Please define version list in '.config_path().'\escalator.php';
+            throw new \Exception($exception);
+        }
+        
+        return $versions;
     }
 }
