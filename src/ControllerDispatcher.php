@@ -18,16 +18,17 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
      */
     public function dispatch(Route $route, Request $request, $controller, $method)
     {
-        $controller = $this->getAvailableController($request,$controller,$method);
+        if (config('escalator.enable', false)) {
+            $version    = $request->header(config('escalator.header'));
+            $controller = $this->getAvailableController($version, $controller, $method);
+        }
         return parent::dispatch($route, $request, $controller, $method);
     }
-
-    protected function getAvailableController($request, $controller, $method)
+    
+    protected function getAvailableController($version, $controller, $method)
     {
-        $version  = $request->header('version');
-        $module   = explode('\\', $controller)[env('CONTROLLER_MODULE_INDEX', 1)];
-        $versions = \Module::get(strtolower($module).'::version');
-
+        $versions = $this->listVersionsArray($controller);
+        
         $r_versions = array_reverse($versions);
         if (!$version) {
             $version = $r_versions[0];
@@ -48,5 +49,11 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
         }
         $version = str_replace('.', '_', $version);
         return preg_replace('/[0-9_]+/', $version, $controller);
+    }
+    
+    protected function listVersionsArray($controller)
+    {
+        $module = explode('\\', $controller)[config('escalator.module.index')];
+        return config('escalator.versions.'.strtolower($module), []);
     }
 }

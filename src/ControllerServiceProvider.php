@@ -8,6 +8,16 @@ use Luminee\Escalator\ControllerDispatcher;
 class ControllerServiceProvider extends ServiceProvider
 {
     /**
+     * Boot the service provider.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->publishes([realpath(__DIR__.'/../config/escalator.php') => config_path('escalator.php')]);
+    }
+    
+    /**
      * Register the service provider.
      *
      * @return void
@@ -17,5 +27,7 @@ class ControllerServiceProvider extends ServiceProvider
         $this->app->singleton('illuminate.route.dispatcher', function ($app) {
             return new ControllerDispatcher($app['router'], $app);
         });
+        
+        $this->mergeConfigFrom(realpath(__DIR__.'/../config/escalator.php'), 'escalator');
     }
 }
