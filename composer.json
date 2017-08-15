@@ -1,0 +1,26 @@
+{
+	"name": "luminee/escalator",
+	"description": "Rewrite Laravel 5 Controller Dispatcher For Version Control",
+	"keywords": [
+		"version",
+		"route",
+		"dispatcher",
+		"laravel",
+		"luminee"
+	],
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "LuminEe",
+			"email": "luminee@qq.com"
+		}
+	],
+	"require": {
+		"php": ">=5.5.9"
+	},
+	"autoload": {
+		"psr-4": {
+			"Luminee\\Escalator\\": "src/"
+		}
+	}
+}
