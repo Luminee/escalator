@@ -3,7 +3,6 @@
 namespace Luminee\Escalator;
 
 use Illuminate\Support\ServiceProvider;
-use Luminee\Escalator\ControllerDispatcher;
 
 class ControllerServiceProvider extends ServiceProvider
 {

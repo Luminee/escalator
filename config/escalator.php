@@ -17,7 +17,7 @@ return [
     
     /*
     |--------------------------------------------------------------------------
-    | Module position in the route's namespace
+    | Option of escalator
     |--------------------------------------------------------------------------
     |
     | You should define your controller namespace with module and version like:
@@ -26,8 +26,15 @@ return [
     |
     */
     
-    'module' => [
-        'index' => 3
+    'option' => [
+        
+        'module_index' => 3,
+        
+        'version_index' => 4,
+        
+        'version_prefix' => 'v',
+        
+        'min_version' => '1.0'
     ],
     
     /*
@@ -54,6 +61,6 @@ return [
     |
     */
     
-    'enable' => false
+    'enable' => true
 
 ];

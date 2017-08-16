@@ -19,7 +19,8 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
     public function dispatch(Route $route, Request $request, $controller, $method)
     {
         if (config('escalator.enable', false)) {
-            $version    = $request->header(config('escalator.header'));
+            $version    = $request->header(config('escalator.header', 'version'));
+            $controller = $this->insertVersionIntoSpace($controller);
             $controller = $this->getAvailableController($version, $controller, $method);
         }
         
@@ -40,21 +41,19 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
             }
             $version   = $r_versions[$i];
             $new_space = str_replace('.', '_', $version);
-            if (!method_exists(preg_replace('/[0-9_]+/', $new_space, $controller), $method)) {
-                continue;
+            if (method_exists(preg_replace('/[0-9_]+/', $new_space, $controller), $method)) {
+                break;
             }
-            break;
         }
         if (!in_array($version, $versions)) {
             $version = $versions[0];
         }
-        $version = str_replace('.', '_', $version);
-        return preg_replace('/[0-9_]+/', $version, $controller);
+        return preg_replace('/[0-9_]+/', str_replace('.', '_', $version), $controller);
     }
     
     protected function listVersionsArray($controller)
     {
-        $module   = explode('\\', $controller)[config('escalator.module.index')];
+        $module   = explode('\\', $controller)[config('escalator.option.module_index', 3)];
         $versions = config('escalator.versions.'.strtolower($module), []);
         
         if (empty($versions)) {
@@ -62,7 +61,25 @@ class ControllerDispatcher extends \Illuminate\Routing\ControllerDispatcher
                 'Please define version list in '.config_path().'\escalator.php';
             throw new \Exception($exception);
         }
-        
+        $older = 0;
+        foreach ($versions as $version) {
+            if (!version_compare($older, $version, '<')) {
+                $exception = 'You have wrong version order: ['.implode(', ', $versions).'], '.
+                    'please sort it by version!';
+                throw new \Exception($exception);
+            }
+            $older = $version;
+        }
         return $versions;
+    }
+    
+    protected function insertVersionIntoSpace($controller)
+    {
+        $prefix      = config('escalator.option.version_prefix', 'v');
+        $min_version = config('escalator.option.min_version', '1.0');
+        $space       = $prefix.str_replace('.', '_', $min_version);
+        $spaces      = explode('\\', $controller);
+        array_splice($spaces, config('escalator.option.version_index', 4), 0, $space);
+        return implode('\\', $spaces);
     }
 }
